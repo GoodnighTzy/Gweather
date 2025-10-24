@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep JSON and model classes
+-keep class org.json.** { *; }
+# Keep your main app classes
+-keep class com.example.gweather.** { *; }
+# Hide everything else
+-dontpreverify
+-dontoptimize

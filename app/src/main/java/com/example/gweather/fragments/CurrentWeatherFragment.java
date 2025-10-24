@@ -36,7 +36,7 @@ public class CurrentWeatherFragment extends Fragment {
     private EditText etCity;
     private Button btnSearch;
 
-    private static final String API_KEY = "4eb431a578964ce05c1c32ff98d6fd72"; // <-- remove key before submission
+    private static final String API_KEY = "4eb431a578964ce05c1c32ff98d6fd72";
 
     @Nullable
     @Override
@@ -86,7 +86,6 @@ public class CurrentWeatherFragment extends Fragment {
                     reader = new InputStreamReader(conn.getInputStream());
                 } else {
                     reader = new InputStreamReader(conn.getErrorStream());
-                    Log.e("WeatherAPIError", "HTTP Error Code: " + responseCode);
                 }
 
                 BufferedReader br = new BufferedReader(reader);
@@ -95,7 +94,6 @@ public class CurrentWeatherFragment extends Fragment {
                 while ((line = br.readLine()) != null) response.append(line);
                 br.close();
 
-                Log.d("WeatherAPIResponse", response.toString());  // <-- log response
 
                 JSONObject obj = new JSONObject(response.toString());
                 requireActivity().runOnUiThread(() -> displayWeather(obj));
