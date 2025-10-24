@@ -2,10 +2,11 @@
  * GWeather App
  * Developer: Alejandro Pangilinan Jr
  * Features:
+ * - Login/Register
  * - Real-time weather via OpenWeather API
  * - City search input
  * - Dynamic icons (sun, moon, rain)
- * - Weather history with persistent storage
+ * - Swipe to switch to weather history
  * - Temperature in Celcius
  * - Sunset/Sunrise 
  * - Added Security Features
