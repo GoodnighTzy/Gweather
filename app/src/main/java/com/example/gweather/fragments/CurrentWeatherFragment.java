@@ -5,7 +5,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,23 +32,42 @@ import java.util.TimeZone;
 
 public class CurrentWeatherFragment extends Fragment {
     private TextView tvCity, tvTemp, tvSunrise, tvSunset, tvIcon;
+    private ImageView ivWeatherIcon;
+    private EditText etCity;
+    private Button btnSearch;
+
     private static final String API_KEY = "4eb431a578964ce05c1c32ff98d6fd72"; // <-- remove key before submission
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_current_weather, container, false);
+
         tvCity = v.findViewById(R.id.tvCity);
         tvTemp = v.findViewById(R.id.tvTemp);
         tvSunrise = v.findViewById(R.id.tvSunrise);
         tvSunset = v.findViewById(R.id.tvSunset);
-        tvIcon = v.findViewById(R.id.tvIcon);
+        ivWeatherIcon = v.findViewById(R.id.ivWeatherIcon);
+        etCity = v.findViewById(R.id.etCity);
+        btnSearch = v.findViewById(R.id.btnSearch);
 
-        fetchWeather("Manila");
+
+        fetchWeather("Tagaytay");
+
+
+        btnSearch.setOnClickListener(v1 -> {
+            String city = etCity.getText().toString().trim();
+            if (!city.isEmpty()) {
+                fetchWeather(city);
+            } else {
+                Toast.makeText(requireContext(), "Please enter a city name", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         return v;
-
-
     }
+
+
 
     private void fetchWeather(String city) {
         String url = "https://api.openweathermap.org/data/2.5/weather?q=" + city +
@@ -86,20 +109,18 @@ public class CurrentWeatherFragment extends Fragment {
     }
 
 
+
     private void displayWeather(JSONObject obj) {
         try {
-            // City and country
             String city = obj.optString("name", "Unknown City");
             String country = obj.optJSONObject("sys") != null
                     ? obj.getJSONObject("sys").optString("country", "Unknown")
                     : "Unknown";
 
-            // Temperature
             double temp = obj.optJSONObject("main") != null
                     ? obj.getJSONObject("main").optDouble("temp", 0.0)
                     : 0.0;
 
-            // Sunrise / Sunset
             long sunrise = 0, sunset = 0;
             int timezoneOffset = obj.optInt("timezone", 0); // offset in seconds
 
@@ -109,36 +130,55 @@ public class CurrentWeatherFragment extends Fragment {
                 sunset = sys.optLong("sunset", 0);
             }
 
-            // Convert UTC → local time using timezone offset
+
             Date sunriseDate = new Date((sunrise + timezoneOffset) * 1000L);
             Date sunsetDate = new Date((sunset + timezoneOffset) * 1000L);
-
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC")); // format as UTC since we adjusted manually
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
             String sunriseTime = sunrise > 0 ? sdf.format(sunriseDate) : "N/A";
             String sunsetTime = sunset > 0 ? sdf.format(sunsetDate) : "N/A";
 
-            // Weather condition
-            String condition = "Clear";
+
+            String condition = "clear";
             if (obj.has("weather") && obj.getJSONArray("weather").length() > 0) {
                 condition = obj.getJSONArray("weather").getJSONObject(0).getString("main");
             }
 
-            // Decide icon
-            int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-            String icon = "☀️";
-            if (condition.toLowerCase().contains("rain")) icon = "🌧️";
-            else if (hour >= 18 || hour < 6) icon = "🌙";
 
-            // Update UI
+            long currentUtcMillis = System.currentTimeMillis();
+            long localTimeMillis = currentUtcMillis + (timezoneOffset * 1000L);
+            Calendar localCal = Calendar.getInstance();
+            localCal.setTimeInMillis(localTimeMillis);
+            int localHour = localCal.get(Calendar.HOUR_OF_DAY);
+
+
+            int iconRes;
+            String conditionLower = condition.toLowerCase();
+
+            if (conditionLower.contains("rain")) {
+                iconRes = R.drawable.ic_rain;
+            } else if (conditionLower.contains("clear")) {
+                if (localHour >= 18 || localHour < 6) {
+                    iconRes = R.drawable.ic_moon;
+                } else {
+                    iconRes = R.drawable.ic_sun;
+                }
+            } else {
+
+                if (localHour >= 18 || localHour < 6) {
+                    iconRes = R.drawable.ic_moon;
+                } else {
+                    iconRes = R.drawable.ic_sun;
+                }
+            }
+
+
             tvCity.setText(city + ", " + country);
-            tvTemp.setText(String.format(Locale.getDefault(), "%.2f°C", temp));
+            tvTemp.setText(String.format(Locale.getDefault(), "%.1f°C", temp));
             tvSunrise.setText("Sunrise: " + sunriseTime);
             tvSunset.setText("Sunset: " + sunsetTime);
-            tvIcon.setText(icon);
-
-            Log.d("WeatherDebug", "City: " + city + ", Temp: " + temp + ", TZ offset: " + timezoneOffset);
+            ivWeatherIcon.setImageResource(iconRes);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -146,9 +186,10 @@ public class CurrentWeatherFragment extends Fragment {
             tvTemp.setText("--°C");
             tvSunrise.setText("Sunrise: --:--");
             tvSunset.setText("Sunset: --:--");
-            tvIcon.setText("❓");
         }
     }
+
+
 
 
 
