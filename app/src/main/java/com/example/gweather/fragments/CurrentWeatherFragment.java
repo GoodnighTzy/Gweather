@@ -36,7 +36,7 @@ public class CurrentWeatherFragment extends Fragment {
     private EditText etCity;
     private Button btnSearch;
 
-    private static final String API_KEY = "4eb431a578964ce05c1c32ff98d6fd72";
+    private static final String API_KEY = "";
 
     @Nullable
     @Override
