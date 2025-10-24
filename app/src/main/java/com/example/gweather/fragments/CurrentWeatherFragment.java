@@ -31,7 +31,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class CurrentWeatherFragment extends Fragment {
-    private TextView tvCity, tvTemp, tvSunrise, tvSunset, tvIcon;
+    private TextView tvCity, tvTemp, tvSunrise, tvSunset ;
     private ImageView ivWeatherIcon;
     private EditText etCity;
     private Button btnSearch;
